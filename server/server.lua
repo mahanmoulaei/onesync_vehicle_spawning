@@ -16,6 +16,7 @@ local function spawnVehicle(model, modelType, coords, properties)
     if isCallFromServer then allPlayers = GetPlayers() math.randomseed() end
     model = type(model) == "string" and joaat(model) or model
     modelType = modelType or vehicleTypes[model] or lib.callback.await(Shared.getVehicleType, allPlayers[math.random(#allPlayers)], model)
+    vehicleTypes[model] = modelType
 
     local vehicle = CreateVehicleServerSetter(model, modelType, table.unpack(coords))
     local doesEntityExist = false
