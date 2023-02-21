@@ -11,24 +11,24 @@ local function generateHash()
 end
 
 local function spawnVehicle(model, modelType, coords, properties)
-    local isCallFromServer = GetInvokingResource() and true or false
-    local allPlayers = nil
-    if isCallFromServer then allPlayers = GetPlayers() math.randomseed() end
-    model = type(model) == "string" and joaat(model) or model
-    modelType = modelType or vehicleTypes[model] or lib.callback.await(Shared.getVehicleType, allPlayers[math.random(#allPlayers)], model)
-    vehicleTypes[model] = modelType
+    CreateThread(function()
+        local allPlayers = GetPlayers() math.randomseed()
+        model = type(model) == "string" and joaat(model) or model
+        modelType = modelType or vehicleTypes[model] or lib.callback.await(Shared.getVehicleType, allPlayers[math.random(#allPlayers)], model)
+        vehicleTypes[model] = modelType
 
-    local vehicle = CreateVehicleServerSetter(model, modelType, table.unpack(coords))
-    local doesEntityExist = false
-    local attemptCount = 0
-    while attemptCount < 5000 do
-        if DoesEntityExist(vehicle) then
-            doesEntityExist = true
-            break
+        local vehicle = CreateVehicleServerSetter(model, modelType, table.unpack(coords))
+        local doesEntityExist = false
+        local attemptCount = 0
+        while attemptCount < 5000 do
+            if DoesEntityExist(vehicle) then
+                doesEntityExist = true
+                break
+            end
+            attemptCount += 500
         end
-        attemptCount += 500
-    end
-    if not doesEntityExist then return print(("The vehicle(%s) did not spawn"):format(model)) end
+        if not doesEntityExist then return print(("The vehicle(%s) did not spawn"):format(model)) end
+    end)
 end
 
 lib.callback.register(Shared.generateHash, function(source)
@@ -61,3 +61,22 @@ RegisterCommand("spawn2", function(source, args, rawMessage)
     ---@diagnostic disable-next-line: param-type-mismatch
     exports[Shared.currentResourceName]:spawnVehicle(args[1], vector4(GetEntityCoords(playerPed), GetEntityHeading(playerPed)))
 end, false)
+
+--[[
+-- test
+CreateThread(function()
+    Wait(5000)
+    local vehicles = {
+        ["lwgtr"] = vector4(119.35, -930.5, 29.8, 162.34),
+        ["lwgtr2"] = vector4(116.96, -937.68, 29.72, 161.87),
+        ["adder"] = vector4(112.98, -949.65, 29.59, 161.63),
+        ["tenf"] = vector4(109.68, -958.95, 29.47, 161.02),
+        ["tenf2"] = vector4(105.92, -971.01, 29.36, 163.7),
+    }
+    
+    for model, coords in pairs(vehicles) do
+        -- print(model, coords)
+        exports[Shared.currentResourceName]:spawnVehicle(model, coords)
+    end
+end)
+]]
