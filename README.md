@@ -1,0 +1,1 @@
+# This is a WIP snippet for server-side vehicle spawning in FiveM OneSync
