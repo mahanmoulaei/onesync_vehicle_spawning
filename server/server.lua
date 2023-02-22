@@ -33,7 +33,7 @@ local function applyVehicleProperties(vehicle, properties)
     end)
 end
 
-local function spawnVehicle(model, modelType, coords, properties)
+local function spawnVehicle(model, modelType, coords, properties, cb)
     CreateThread(function()
         local allPlayers = GetPlayers() math.randomseed()
         model = type(model) == "string" and joaat(model) or model
@@ -54,6 +54,7 @@ local function spawnVehicle(model, modelType, coords, properties)
         end
         if not doesEntityExist then return print(("The vehicle(%s) did not spawn"):format(model)) end
         if properties then applyVehicleProperties(vehicle, properties) end
+        if cb then cb(vehicle, NetworkGetNetworkIdFromEntity(vehicle)) end
     end)
 end
 
@@ -79,9 +80,9 @@ end)
 ---@param model string
 ---@param coords vector4
 ---@param properties? {}
-exports("spawnVehicle", function(model, coords, properties)
+exports("spawnVehicle", function(model, coords, properties, cb)
     if not coords or type(coords) ~= "vector4" then return end
-    spawnVehicle(model, nil, coords, properties)
+    spawnVehicle(model, nil, coords, properties, cb)
 end)
 
 RegisterServerEvent(Shared.appliedVehiclePropertiesEvent, function(vehicleNetId)
@@ -92,7 +93,15 @@ RegisterCommand("spawn2", function(source, args, rawMessage)
     if not args or not args[1] then return end
     local playerPed = GetPlayerPed(source)
     ---@diagnostic disable-next-line: param-type-mismatch
-    exports[Shared.currentResourceName]:spawnVehicle(args[1], vector4(GetEntityCoords(playerPed), GetEntityHeading(playerPed)))
+    exports[Shared.currentResourceName]:spawnVehicle(args[1], vector4(GetEntityCoords(playerPed), GetEntityHeading(playerPed)), {plate = "MAHAN"}, function(vehicleEntity, vehicleNetId)
+        for i = 1, 20 do
+            SetPedIntoVehicle(playerPed, vehicleEntity, -1)
+            if GetVehiclePedIsIn(playerPed, false) == vehicleEntity then
+                break
+            end
+            Wait(0)
+        end
+    end)
 end, false)
 
 --[[
