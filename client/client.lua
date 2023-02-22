@@ -31,13 +31,6 @@ lib.callback.register(Shared.getVehicleType, function(model)
     return getVehicleType(model)
 end)
 
----@param model string
----@param coords? vector4
----@param properties? {}
-exports("spawnVehicle", function(model, coords, properties, cb)
-    spawnVehicle(model, coords, properties, cb)
-end)
-
 RegisterNetEvent(Shared.applyVehiclePropertiesEvent, function(vehicleNetId, vehicleProperties)
     if GetInvokingResource() then return end
     if not NetworkDoesEntityExistWithNetworkId(vehicleNetId) then return end
@@ -66,6 +59,19 @@ RegisterNetEvent(Shared.vehicleSpawnedCallback, function(cb, vehicleNetId)
     callbacks[cb] = nil
 end)
 
+AddEventHandler("onResourceStop", function(resource)
+    if resource ~= Shared.currentResourceName then return end
+    LocalPlayer.state:set(Shared.hashTable, nil, true)
+end)
+
+---@param model string
+---@param coords? vector4
+---@param properties? {}
+---@param cb? function(vehicleEntity, vehicleNetId)
+exports("spawnVehicle", function(model, coords, properties, cb)
+    spawnVehicle(model, coords, properties, cb)
+end)
+
 RegisterCommand("spawn", function(source, args, rawMessage)
     if not args or not args[1] then return end
     exports[Shared.currentResourceName]:spawnVehicle(args[1], nil, {plate = " CLIENT"}, function(vehicleEntity, vehicleNetId)
@@ -76,11 +82,6 @@ RegisterCommand("spawn", function(source, args, rawMessage)
         end
     end)
 end, false)
-
-AddEventHandler("onResourceStop", function(resource)
-    if resource ~= Shared.currentResourceName then return end
-    LocalPlayer.state:set(Shared.hashTable, nil, true)
-end)
 
 --[[
 -- test
@@ -95,7 +96,7 @@ CreateThread(function()
     }
     
     for model, coords in pairs(vehicles) do
-        exports[Shared.currentResourceName]:spawnVehicle(model, coords, {plate = "CLIENT"})
+        exports[Shared.currentResourceName]:spawnVehicle(model, coords, {plate = " CLIENT"})
     end
 end)
 ]]

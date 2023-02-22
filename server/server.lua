@@ -12,6 +12,10 @@ local function generateHash()
     return hash
 end
 
+lib.callback.register(Shared.generateHash, function(source)
+    return source and generateHash()
+end)
+
 local function applyVehicleProperties(vehicle, properties)
     vehiclesProperties[vehicle] = properties
     if isVehiclePropertiesThreadRunning then return end
@@ -58,10 +62,6 @@ local function spawnVehicle(model, modelType, coords, properties, cb)
     end)
 end
 
-lib.callback.register(Shared.generateHash, function(source)
-    return source and generateHash()
-end)
-
 RegisterServerEvent(Shared.spawnVehicleEvent, function(model, modelType, coords, properties, hash, cb)
     if not source then return end
     local source = source
@@ -80,16 +80,17 @@ RegisterServerEvent(Shared.spawnVehicleEvent, function(model, modelType, coords,
     end)
 end)
 
+RegisterServerEvent(Shared.appliedVehiclePropertiesEvent, function(vehicleNetId)
+    vehiclesProperties[NetworkGetEntityFromNetworkId(vehicleNetId)] = nil
+end)
+
 ---@param model string
 ---@param coords vector4
 ---@param properties? {}
+---@param cb? function(vehicleEntity, vehicleNetId)
 exports("spawnVehicle", function(model, coords, properties, cb)
     if not coords or type(coords) ~= "vector4" then return end
     spawnVehicle(model, nil, coords, properties, cb)
-end)
-
-RegisterServerEvent(Shared.appliedVehiclePropertiesEvent, function(vehicleNetId)
-    vehiclesProperties[NetworkGetEntityFromNetworkId(vehicleNetId)] = nil
 end)
 
 RegisterCommand("spawn2", function(source, args, rawMessage)
@@ -120,7 +121,7 @@ CreateThread(function()
     }
     
     for model, coords in pairs(vehicles) do
-        exports[Shared.currentResourceName]:spawnVehicle(model, coords, {plate = "SERVER"})
+        exports[Shared.currentResourceName]:spawnVehicle(model, coords, {plate = " SERVER"})
     end
 end)
 ]]
