@@ -14,6 +14,8 @@ Shared.applyVehiclePropertiesEvent = ("%s:%s"):format(Shared.currentResourceName
 
 Shared.appliedVehiclePropertiesEvent = ("%s:%s"):format(Shared.currentResourceName, "appliedVehiclePropertiesEvent")
 
+Shared.vehicleSpawnedCallback = ("%s:%s"):format(Shared.currentResourceName, "vehicleSpawnedCallback")
+
 function dumpTable(table, nb)
     if nb == nil then
         nb = 0

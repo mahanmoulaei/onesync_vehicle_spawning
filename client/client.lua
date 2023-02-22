@@ -1,4 +1,5 @@
 local playerId = PlayerId()
+local callbacks = {}
 local vehicleTypes = {
     [8]  = "bike",
     [11] = "trailer",
@@ -13,7 +14,7 @@ local function getVehicleType(model)
     return (model == `submersible` or model == `submersible2`) and "submarine" or vehicleTypes[GetVehicleClassFromName(model)] or "automobile"
 end
 
-local function spawnVehicle(model, coords, properties)
+local function spawnVehicle(model, coords, properties, cb)
     CreateThread(function()
         model = type(model) == "string" and joaat(model) or model
         local modelType = getVehicleType(model)
@@ -21,7 +22,8 @@ local function spawnVehicle(model, coords, properties)
         local hashTable = LocalPlayer.state[Shared.hashTable] or {}
         hashTable[hash] = hash
         LocalPlayer.state:set(Shared.hashTable, hashTable, true)
-        TriggerServerEvent(Shared.spawnVehicleEvent, model, modelType, coords, properties, hash)
+        if cb then callbacks[cb.__cfx_functionReference] = cb end
+        TriggerServerEvent(Shared.spawnVehicleEvent, model, modelType, coords, properties, hash, cb?.__cfx_functionReference)
     end)
 end
 
@@ -32,8 +34,8 @@ end)
 ---@param model string
 ---@param coords? vector4
 ---@param properties? {}
-exports("spawnVehicle", function(model, coords, properties)
-    spawnVehicle(model, coords, properties)
+exports("spawnVehicle", function(model, coords, properties, cb)
+    spawnVehicle(model, coords, properties, cb)
 end)
 
 RegisterNetEvent(Shared.applyVehiclePropertiesEvent, function(vehicleNetId, vehicleProperties)
@@ -45,9 +47,34 @@ RegisterNetEvent(Shared.applyVehiclePropertiesEvent, function(vehicleNetId, vehi
     TriggerServerEvent(Shared.appliedVehiclePropertiesEvent, vehicleNetId)
 end)
 
+RegisterNetEvent(Shared.vehicleSpawnedCallback, function(cb, vehicleNetId)
+    if GetInvokingResource() then return end
+    if cb and callbacks[cb] then
+        local vehicleEntity = 0
+        local attemptCount = 0
+        local attempIncreaseAmount = 500
+        while attemptCount < 5000 do
+            if NetworkDoesEntityExistWithNetworkId(vehicleNetId) then
+                vehicleEntity = NetworkGetEntityFromNetworkId(vehicleNetId)
+                break
+            end
+            attemptCount += attempIncreaseAmount
+            Wait(attempIncreaseAmount)
+        end
+        callbacks[cb](vehicleEntity, vehicleNetId)
+    end
+    callbacks[cb] = nil
+end)
+
 RegisterCommand("spawn", function(source, args, rawMessage)
     if not args or not args[1] then return end
-    exports[Shared.currentResourceName]:spawnVehicle(args[1])
+    exports[Shared.currentResourceName]:spawnVehicle(args[1], nil, {plate = " CLIENT"}, function(vehicleEntity, vehicleNetId)
+        for i = 1, 20 do
+            SetPedIntoVehicle(PlayerPedId(), vehicleEntity, -1)
+            if GetVehiclePedIsIn(PlayerPedId(), false) == vehicleEntity then break end
+            Wait(0)
+        end
+    end)
 end, false)
 
 AddEventHandler("onResourceStop", function(resource)

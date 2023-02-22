@@ -62,8 +62,9 @@ lib.callback.register(Shared.generateHash, function(source)
     return source and generateHash()
 end)
 
-RegisterServerEvent(Shared.spawnVehicleEvent, function(model, modelType, coords, properties, hash)
+RegisterServerEvent(Shared.spawnVehicleEvent, function(model, modelType, coords, properties, hash, cb)
     if not source then return end
+    local source = source
     local hashTable = Player(source).state[Shared.hashTable] or {}
     local doesHashMatch = generatedHash[hashTable[hash]] and true or false
     generatedHash[hash] = nil
@@ -74,7 +75,9 @@ RegisterServerEvent(Shared.spawnVehicleEvent, function(model, modelType, coords,
     local playerPed = GetPlayerPed(source)
     ---@diagnostic disable-next-line: param-type-mismatch
     coords = coords and vector4(coords.x, coords.y, coords.z, coords.w or GetEntityHeading(playerPed)) or vector4(GetEntityCoords(playerPed), GetEntityHeading(playerPed))
-    spawnVehicle(model, modelType, coords, properties)
+    spawnVehicle(model, modelType, coords, properties, cb and function(vehicleEntity, vehicleNetId)
+        TriggerClientEvent(Shared.vehicleSpawnedCallback, source, cb, vehicleNetId)
+    end)
 end)
 
 ---@param model string
@@ -93,7 +96,7 @@ RegisterCommand("spawn2", function(source, args, rawMessage)
     if not args or not args[1] then return end
     local playerPed = GetPlayerPed(source)
     ---@diagnostic disable-next-line: param-type-mismatch
-    exports[Shared.currentResourceName]:spawnVehicle(args[1], vector4(GetEntityCoords(playerPed), GetEntityHeading(playerPed)), {plate = "MAHAN"}, function(vehicleEntity, vehicleNetId)
+    exports[Shared.currentResourceName]:spawnVehicle(args[1], vector4(GetEntityCoords(playerPed), GetEntityHeading(playerPed)), {plate = " SERVER"}, function(vehicleEntity, vehicleNetId)
         for i = 1, 20 do
             SetPedIntoVehicle(playerPed, vehicleEntity, -1)
             if GetVehiclePedIsIn(playerPed, false) == vehicleEntity then
