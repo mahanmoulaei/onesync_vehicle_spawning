@@ -2,13 +2,17 @@ Shared = {}
 
 Shared.currentResourceName = GetCurrentResourceName()
 
-Shared.generateHash = ("%s:%s"):format(Shared.currentResourceName, "generateHash")
-
 Shared.hashTable = ("%s_%s"):format(Shared.currentResourceName, "hashTable")
+
+Shared.generateHash = ("%s:%s"):format(Shared.currentResourceName, "generateHash")
 
 Shared.getVehicleType = ("%s:%s"):format(Shared.currentResourceName, "getVehicleType")
 
 Shared.spawnVehicleEvent = ("%s:%s"):format(Shared.currentResourceName, "spawnVehicleEvent")
+
+Shared.applyVehiclePropertiesEvent = ("%s:%s"):format(Shared.currentResourceName, "applyVehiclePropertiesEvent")
+
+Shared.appliedVehiclePropertiesEvent = ("%s:%s"):format(Shared.currentResourceName, "appliedVehiclePropertiesEvent")
 
 function dumpTable(table, nb)
     if nb == nil then

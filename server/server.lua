@@ -2,12 +2,35 @@ local MAX_HASH_ID = 65535
 local currentHashId = 0
 local generatedHash = {}
 local vehicleTypes = {}
+local vehiclesProperties = {}
+local isVehiclePropertiesThreadRunning = false
 
 local function generateHash()
     currentHashId = currentHashId < MAX_HASH_ID and currentHashId + 1 or 0
     local hash = ("%s%s"):format(currentHashId, os.clock())
     generatedHash[hash] = true
     return hash
+end
+
+local function applyVehicleProperties(vehicle, properties)
+    vehiclesProperties[vehicle] = properties
+    if isVehiclePropertiesThreadRunning then return end
+    isVehiclePropertiesThreadRunning = true
+    CreateThread(function()
+        while isVehiclePropertiesThreadRunning do
+            local vehiclesPropertiesCount = 0
+            for vehicleEntity, vehicleProperties in pairs(vehiclesProperties) do
+                vehiclesPropertiesCount += 1
+                if not DoesEntityExist(vehicleEntity) then vehiclesProperties[vehicleEntity] = nil vehiclesPropertiesCount -= 1 goto skipIndex end
+                local currentOwner = NetworkGetEntityOwner(vehicleEntity)
+                if not currentOwner or currentOwner == 0 or currentOwner == -1 then goto skipIndex end
+                TriggerClientEvent(Shared.applyVehiclePropertiesEvent, currentOwner, NetworkGetNetworkIdFromEntity(vehicleEntity), vehicleProperties)
+                ::skipIndex::
+            end
+            if vehiclesPropertiesCount == 0 then isVehiclePropertiesThreadRunning = false break end
+            Wait(500)
+        end
+    end)
 end
 
 local function spawnVehicle(model, modelType, coords, properties)
@@ -20,14 +43,17 @@ local function spawnVehicle(model, modelType, coords, properties)
         local vehicle = CreateVehicleServerSetter(model, modelType, table.unpack(coords))
         local doesEntityExist = false
         local attemptCount = 0
+        local attempIncreaseAmount = 500
         while attemptCount < 5000 do
             if DoesEntityExist(vehicle) then
                 doesEntityExist = true
                 break
             end
-            attemptCount += 500
+            attemptCount += attempIncreaseAmount
+            Wait(attempIncreaseAmount)
         end
         if not doesEntityExist then return print(("The vehicle(%s) did not spawn"):format(model)) end
+        if properties then applyVehicleProperties(vehicle, properties) end
     end)
 end
 
@@ -55,6 +81,10 @@ exports("spawnVehicle", function(model, coords, properties)
     spawnVehicle(model, nil, coords, properties)
 end)
 
+RegisterServerEvent(Shared.appliedVehiclePropertiesEvent, function(vehicleNetId)
+    vehiclesProperties[NetworkGetEntityFromNetworkId(vehicleNetId)] = nil
+end)
+
 RegisterCommand("spawn2", function(source, args, rawMessage)
     if not args or not args[1] then return end
     local playerPed = GetPlayerPed(source)
@@ -75,8 +105,7 @@ CreateThread(function()
     }
     
     for model, coords in pairs(vehicles) do
-        -- print(model, coords)
-        exports[Shared.currentResourceName]:spawnVehicle(model, coords)
+        exports[Shared.currentResourceName]:spawnVehicle(model, coords, {plate = "SERVER"})
     end
 end)
 ]]

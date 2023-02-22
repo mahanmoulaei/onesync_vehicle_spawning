@@ -1,3 +1,4 @@
+local playerId = PlayerId()
 local vehicleTypes = {
     [8]  = "bike",
     [11] = "trailer",
@@ -30,6 +31,15 @@ end)
 
 exports("spawnVehicle", spawnVehicle)
 
+RegisterNetEvent(Shared.applyVehiclePropertiesEvent, function(vehicleNetId, vehicleProperties)
+    if GetInvokingResource() then return end
+    if not NetworkDoesEntityExistWithNetworkId(vehicleNetId) then return end
+    local vehicleEntity = NetworkGetEntityFromNetworkId(vehicleNetId)
+    if NetworkGetEntityOwner(vehicleEntity) ~= playerId then return end
+    lib.setVehicleProperties(vehicleEntity, vehicleProperties)
+    TriggerServerEvent(Shared.appliedVehiclePropertiesEvent, vehicleNetId)
+end)
+
 RegisterCommand("spawn", function(source, args, rawMessage)
     if not args or not args[1] then return end
     exports[Shared.currentResourceName]:spawnVehicle(args[1])
@@ -53,8 +63,7 @@ CreateThread(function()
     }
     
     for model, coords in pairs(vehicles) do
-        -- print(model, coords)
-        exports[Shared.currentResourceName]:spawnVehicle(model, coords)
+        exports[Shared.currentResourceName]:spawnVehicle(model, coords, {plate = "CLIENT"})
     end
 end)
 ]]
