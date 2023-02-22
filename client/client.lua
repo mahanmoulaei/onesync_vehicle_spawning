@@ -29,7 +29,12 @@ lib.callback.register(Shared.getVehicleType, function(model)
     return getVehicleType(model)
 end)
 
-exports("spawnVehicle", spawnVehicle)
+---@param model string
+---@param coords? vector4
+---@param properties? {}
+exports("spawnVehicle", function(model, coords, properties)
+    spawnVehicle(model, coords, properties)
+end)
 
 RegisterNetEvent(Shared.applyVehiclePropertiesEvent, function(vehicleNetId, vehicleProperties)
     if GetInvokingResource() then return end

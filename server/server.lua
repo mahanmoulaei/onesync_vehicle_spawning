@@ -76,8 +76,11 @@ RegisterServerEvent(Shared.spawnVehicleEvent, function(model, modelType, coords,
     spawnVehicle(model, modelType, coords, properties)
 end)
 
+---@param model string
+---@param coords vector4
+---@param properties? {}
 exports("spawnVehicle", function(model, coords, properties)
-    if type(coords) ~= "vector4" then return end
+    if not coords or type(coords) ~= "vector4" then return end
     spawnVehicle(model, nil, coords, properties)
 end)
 
