@@ -34,8 +34,10 @@ end)
 RegisterNetEvent(Shared.applyVehiclePropertiesEvent, function(vehicleNetId, vehicleProperties)
     if GetInvokingResource() then return end
     if not NetworkDoesEntityExistWithNetworkId(vehicleNetId) then return end
-    local vehicleEntity = NetworkGetEntityFromNetworkId(vehicleNetId)
-    if NetworkGetEntityOwner(vehicleEntity) ~= playerId then return end
+    -- local vehicleEntity = NetworkGetEntityFromNetworkId(vehicleNetId)
+    -- local vehicleDriverPed = GetPedInVehicleSeat(vehicleEntity, -1)
+    -- local isAnyOtherPlayerDriver = (vehicleDriverPed ~= 0 and vehicleDriverPed ~= PlayerPedId()) and true or false
+    if NetworkGetEntityOwner(vehicleEntity) ~= playerId --[[or isAnyOtherPlayerDriver]] then return end
     lib.setVehicleProperties(vehicleEntity, vehicleProperties)
     TriggerServerEvent(Shared.appliedVehiclePropertiesEvent, vehicleNetId)
 end)
@@ -78,7 +80,6 @@ RegisterCommand("spawn", function(source, args, rawMessage)
         for i = 1, 20 do
             SetPedIntoVehicle(PlayerPedId(), vehicleEntity, -1)
             if GetVehiclePedIsIn(PlayerPedId(), false) == vehicleEntity then break end
-            Wait(0)
         end
     end)
 end, false)

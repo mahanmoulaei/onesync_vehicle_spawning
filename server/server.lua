@@ -58,7 +58,7 @@ local function spawnVehicle(model, modelType, coords, properties, cb)
         end
         if not doesEntityExist then return print(("The vehicle(%s) did not spawn"):format(model)) end
         if properties then applyVehicleProperties(vehicle, properties) end
-        if cb then cb(vehicle, NetworkGetNetworkIdFromEntity(vehicle)) end
+        if cb then SetTimeout(1000, function() cb(vehicle, NetworkGetNetworkIdFromEntity(vehicle)) end) end
     end)
 end
 
@@ -100,10 +100,7 @@ RegisterCommand("spawn2", function(source, args, rawMessage)
     exports[Shared.currentResourceName]:spawnVehicle(args[1], vector4(GetEntityCoords(playerPed), GetEntityHeading(playerPed)), {plate = " SERVER"}, function(vehicleEntity, vehicleNetId)
         for i = 1, 20 do
             SetPedIntoVehicle(playerPed, vehicleEntity, -1)
-            if GetVehiclePedIsIn(playerPed, false) == vehicleEntity then
-                break
-            end
-            Wait(0)
+            if GetVehiclePedIsIn(playerPed, false) == vehicleEntity then break end
         end
     end)
 end, false)
