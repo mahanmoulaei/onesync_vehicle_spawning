@@ -34,7 +34,7 @@ end)
 RegisterNetEvent(Shared.applyVehiclePropertiesEvent, function(vehicleNetId, vehicleProperties)
     if GetInvokingResource() then return end
     if not NetworkDoesEntityExistWithNetworkId(vehicleNetId) then return end
-    -- local vehicleEntity = NetworkGetEntityFromNetworkId(vehicleNetId)
+    local vehicleEntity = NetworkGetEntityFromNetworkId(vehicleNetId)
     -- local vehicleDriverPed = GetPedInVehicleSeat(vehicleEntity, -1)
     -- local isAnyOtherPlayerDriver = (vehicleDriverPed ~= 0 and vehicleDriverPed ~= PlayerPedId()) and true or false
     if NetworkGetEntityOwner(vehicleEntity) ~= playerId --[[or isAnyOtherPlayerDriver]] then return end
