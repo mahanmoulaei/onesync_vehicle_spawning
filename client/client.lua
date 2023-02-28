@@ -22,8 +22,8 @@ local function spawnVehicle(model, coords, properties, cb)
         local hashTable = LocalPlayer.state[Shared.hashTable] or {}
         hashTable[hash] = hash
         LocalPlayer.state:set(Shared.hashTable, hashTable, true)
-        if cb then callbacks[cb.__cfx_functionReference] = cb end
-        TriggerServerEvent(Shared.spawnVehicleEvent, model, modelType, coords, properties, hash, cb?.__cfx_functionReference)
+        if cb then callbacks[hash] = cb end
+        TriggerServerEvent(Shared.spawnVehicleEvent, model, modelType, coords, properties, hash, cb and true)
     end)
 end
 
@@ -42,9 +42,9 @@ RegisterNetEvent(Shared.applyVehiclePropertiesEvent, function(vehicleNetId, vehi
     TriggerServerEvent(Shared.appliedVehiclePropertiesEvent, vehicleNetId)
 end)
 
-RegisterNetEvent(Shared.vehicleSpawnedCallback, function(cb, vehicleNetId)
+RegisterNetEvent(Shared.vehicleSpawnedCallback, function(hash, vehicleNetId)
     if GetInvokingResource() then return end
-    if cb and callbacks[cb] then
+    if hash and callbacks[hash] then
         local vehicleEntity = 0
         local attemptCount = 0
         local attempIncreaseAmount = 500
@@ -56,9 +56,9 @@ RegisterNetEvent(Shared.vehicleSpawnedCallback, function(cb, vehicleNetId)
             attemptCount += attempIncreaseAmount
             Wait(attempIncreaseAmount)
         end
-        callbacks[cb](vehicleEntity, vehicleNetId)
+        callbacks[hash](vehicleEntity, vehicleNetId)
     end
-    callbacks[cb] = nil
+    callbacks[hash] = nil
 end)
 
 AddEventHandler("onResourceStop", function(resource)

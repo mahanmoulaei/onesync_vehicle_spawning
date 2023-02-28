@@ -58,7 +58,7 @@ local function spawnVehicle(model, modelType, coords, properties, cb)
         end
         if not doesEntityExist then return print(("The vehicle(%s) did not spawn"):format(model)) end
         if properties then applyVehicleProperties(vehicle, properties) end
-        if cb then SetTimeout(1000, function() cb(vehicle, NetworkGetNetworkIdFromEntity(vehicle)) end) end
+        if cb then Wait(1000) cb(vehicle, NetworkGetNetworkIdFromEntity(vehicle)) end
     end)
 end
 
@@ -75,8 +75,8 @@ RegisterServerEvent(Shared.spawnVehicleEvent, function(model, modelType, coords,
     local playerPed = GetPlayerPed(source)
     ---@diagnostic disable-next-line: param-type-mismatch
     coords = coords and vector4(coords.x, coords.y, coords.z, coords.w or GetEntityHeading(playerPed)) or vector4(GetEntityCoords(playerPed), GetEntityHeading(playerPed))
-    spawnVehicle(model, modelType, coords, properties, cb and function(vehicleEntity, vehicleNetId)
-        TriggerClientEvent(Shared.vehicleSpawnedCallback, source, cb, vehicleNetId)
+    spawnVehicle(model, modelType, coords, properties, cb and function(_, vehicleNetId)
+        TriggerClientEvent(Shared.vehicleSpawnedCallback, source, hash, vehicleNetId)
     end)
 end)
 
