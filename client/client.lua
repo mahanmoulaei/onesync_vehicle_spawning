@@ -38,7 +38,7 @@ RegisterNetEvent(Shared.applyVehiclePropertiesEvent, function(vehicleNetId, vehi
     -- local vehicleDriverPed = GetPedInVehicleSeat(vehicleEntity, -1)
     -- local isAnyOtherPlayerDriver = (vehicleDriverPed ~= 0 and vehicleDriverPed ~= PlayerPedId()) and true or false
     if NetworkGetEntityOwner(vehicleEntity) ~= playerId --[[or isAnyOtherPlayerDriver]] then return end
-    lib.setVehicleProperties(vehicleEntity, vehicleProperties)
+    if not lib.setVehicleProperties(vehicleEntity, vehicleProperties) then return end
     TriggerServerEvent(Shared.appliedVehiclePropertiesEvent, vehicleNetId)
 end)
 
@@ -95,7 +95,7 @@ CreateThread(function()
         ["tenf"] = vector4(109.68, -958.95, 29.47, 161.02),
         ["tenf2"] = vector4(105.92, -971.01, 29.36, 163.7),
     }
-    
+
     for model, coords in pairs(vehicles) do
         exports[Shared.currentResourceName]:spawnVehicle(model, coords, {plate = " CLIENT"})
     end
