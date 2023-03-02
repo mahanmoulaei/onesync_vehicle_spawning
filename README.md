@@ -13,7 +13,7 @@
 ---@param vehicleCoords? vector4 - optional
 ---@param vehicleProperties? {} - optional
 ---@param cb? function(vehicleEntity, vehicleNetId) - optional
-exports["onesync_spawning_snippet"]:spawnVehicle(vehicleModel, vehicleCoords, vehicleProperties, cb)
+exports["onesync_vehicle_spawning"]:spawnVehicle(vehicleModel, vehicleCoords, vehicleProperties, cb)
 ```
 
 ## Server Export
@@ -22,7 +22,7 @@ exports["onesync_spawning_snippet"]:spawnVehicle(vehicleModel, vehicleCoords, ve
 ---@param vehicleCoords vector4
 ---@param vehicleProperties? {} - optional
 ---@param cb? function(vehicleEntity, vehicleNetId) - optional
-exports["onesync_spawning_snippet"]:spawnVehicle(vehicleModel, vehicleCoords, vehicleProperties, cb)
+exports["onesync_vehicle_spawning"]:spawnVehicle(vehicleModel, vehicleCoords, vehicleProperties, cb)
 ```
 
 <hr>
