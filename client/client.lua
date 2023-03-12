@@ -37,7 +37,7 @@ RegisterNetEvent(Shared.applyVehiclePropertiesEvent, function(vehicleNetId, vehi
     local vehicleEntity = NetworkGetEntityFromNetworkId(vehicleNetId)
     -- local vehicleDriverPed = GetPedInVehicleSeat(vehicleEntity, -1)
     -- local isAnyOtherPlayerDriver = (vehicleDriverPed ~= 0 and vehicleDriverPed ~= PlayerPedId()) and true or false
-    if NetworkGetEntityOwner(vehicleEntity) ~= playerId --[[or isAnyOtherPlayerDriver]] then return end
+    if NetworkGetEntityOwner(vehicleEntity) ~= playerId or not NetworkHasControlOfEntity(vehicleEntity) --[[or isAnyOtherPlayerDriver]] then return end
     if not lib.setVehicleProperties(vehicleEntity, vehicleProperties) then return end
     TriggerServerEvent(Shared.appliedVehiclePropertiesEvent, vehicleNetId)
 end)
